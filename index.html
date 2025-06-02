@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Advanced Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --dark: #1e1e2d;
+            --darker: #14141c;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        body.dark-mode {
+            background-color: var(--darker);
+            color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode header {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--light-gray);
+            border-radius: 15px;
+            cursor: pointer;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        body.dark-mode .theme-toggle {
+            background: #2d2d3d;
+            border-color: #444;
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: var(--warning);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        body.dark-mode .toggle-thumb {
+            transform: translateX(30px);
+            background: var(--light);
+        }
+
+        .toggle-icons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        .toggle-icons i {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .toggle-icons .fa-sun {
+            color: var(--warning);
+        }
+
+        body.dark-mode .toggle-icons .fa-moon {
+            color: #aaa;
+        }
+
+        /* Main Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+            min-height: calc(100vh - 150px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            height: fit-content;
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--dark);
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode .sidebar-section h3 {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-list {
+            list-style: none;
+        }
+
+        .sidebar-list li {
+            padding: 10px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+            padding: 10px;
+            transition: var(--transition);
+        }
+
+        .sidebar-list li:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        body.dark-mode .sidebar-list li:hover {
+            background: rgba(67, 97, 238, 0.2);
+        }
+
+        .sidebar-list li.active {
+            background: rgba(67, 97, 238, 0.15);
+            font-weight: 500;
+        }
+
+        body.dark-mode .sidebar-list li.active {
+            background: rgba(67, 97, 238, 0.3);
+        }
+
+        .sidebar-list li i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .priority-tag {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .priority-high { background: var(--danger); }
+        .priority-medium { background: var(--warning); }
+        .priority-low { background: var(--success); }
+
+        /* Progress Section */
+        .progress-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+        }
+
+        body.dark-mode .progress-section {
+            background: var(--dark);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--light-gray);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .progress-bar {
+            background: #2d2d3d;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 6px;
+            width: 65%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            background: white;
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: var(--box-shadow);
+        }
+
+        body.dark-mode .view-toggle {
+            background: var(--dark);
+        }
+
+        .view-toggle button {
+            padding: 8px 15px;
+            border: none;
+            background: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .view-toggle button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .filter-search {
+            display: flex;
+            gap: 15px;
+        }
+
+        .filter-select, .search-box {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        body.dark-mode .filter-select, 
+        body.dark-mode .search-box {
+            background: var(--dark);
+            border-color: #444;
+            color: #f0f0f0;
+        }
+
+        /* Task Grid */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        /* Task Card */
+        .task-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .task-card {
+            background: var(--dark);
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-priority {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .priority-high { background: rgba(239, 71, 111, 0.2); color: var(--danger); }
+        .priority-medium { background: rgba(255, 209, 102, 0.2); color: #c9a227; }
+        .priority-low { background: rgba(6, 214, 160, 0.2); color: var(--success); }
+
+        .task-date {
+            font-size: 13px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .task-description {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .subtasks {
+            margin: 15px 0;
+        }
+
+        .subtask {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        body.dark-mode .subtask {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .subtask:last-child {
+            border-bottom: none;
+        }
+
+        .subtask input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .task-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        body.dark-mode .tag {
+            background: rgba(67, 97, 238, 0.2);
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        body.dark-mode .task-footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .task-actions button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--light-gray);
+            color: var(--gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .task-actions button {
+            background: #2d2d3d;
+            color: #aaa;
+        }
+
+        .task-actions button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .completed .task-title {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        /* Matrix View */
+        .matrix-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            height: 600px;
+        }
+
+        .matrix-quadrant {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            overflow-y: auto;
+        }
+
+        body.dark-mode .matrix-quadrant {
+            background: var(--dark);
+        }
+
+        .matrix-quadrant h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode .matrix-quadrant h3 {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .urgent-important { border-top: 4px solid var(--danger); }
+        .urgent-not-important { border-top: 4px solid var(--warning); }
+        .not-urgent-important { border-top: 4px solid var(--primary); }
+        .not-urgent-not-important { border-top: 4px solid var(--success); }
+
+        /* Add Task Button */
+        .add-task-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .add-task-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .task-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .task-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .filter-search {
+                width: 100%;
+            }
+            
+            .search-box {
+                flex-grow: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 22px;
+            }
+            
+            .header-controls {
+                gap: 10px;
+            }
+            
+            .matrix-view {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, 1fr);
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-tasks"></i>
+                <h1>TaskFlow</h1>
+            </div>
+            <div class="header-controls">
+                <div class="search-box-container">
+                    <input type="text" class="search-box" placeholder="Search tasks...">
+                </div>
+                <div class="theme-toggle" id="themeToggle">
+                    <div class="toggle-thumb"></div>
+                    <div class="toggle-icons">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="app-container">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Views</h3>
+                    <ul class="sidebar-list">
+                        <li class="active"><i class="fas fa-list"></i> List View</li>
+                        <li><i class="fas fa-table"></i> Board View</li>
+                        <li><i class="fas fa-calendar"></i> Calendar</li>
+                        <li><i class="fas fa-th-large"></i> Matrix</li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Categories</h3>
+                    <ul class="sidebar-list">
+                        <li><i class="fas fa-inbox"></i> Inbox</li>
+                        <li><i class="fas fa-briefcase"></i> Work</li>
+                        <li><i class="fas fa-home"></i> Personal</li>
+                        <li><i class="fas fa-shopping-cart"></i> Shopping</li>
+                        <li><i class="fas fa-plus"></i> Add Category</li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Filters</h3>
+                    <ul class="sidebar-list">
+                        <li><span class="priority-tag priority-high"></span> High Priority</li>
+                        <li><span class="priority-tag priority-medium"></span> Medium Priority</li>
+                        <li><span class="priority-tag priority-low"></span> Low Priority</li>
+                        <li><i class="fas fa-check-circle"></i> Completed</li>
+                        <li><i class="fas fa-clock"></i> Today</li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Tags</h3>
+                    <div class="task-tags">
+                        <span class="tag">Urgent</span>
+                        <span class="tag">Meeting</span>
+                        <span class="tag">Project</span>
+                        <span class="tag">Home</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main class="main-content">
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <h2>Your Progress</h2>
+                        <span>65% Complete</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-stats">
+                        <span>24 tasks completed</span>
+                        <span>13 tasks remaining</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <div class="view-toggle">
+                        <button class="active"><i class="fas fa-list"></i></button>
+                        <button><i class="fas fa-grip"></i></button>
+                        <button><i class="fas fa-th-large"></i></button>
+                    </div>
+                    
+                    <div class="filter-search">
+                        <select class="filter-select">
+                            <option>All Tasks</option>
+                            <option>High Priority</option>
+                            <option>Medium Priority</option>
+                            <option>Low Priority</option>
+                            <option>Completed</option>
+                        </select>
+                        <input type="text" class="search-box" placeholder="Search tasks...">
+                    </div>
+                </div>
+                
+                <div class="task-grid">
+                    <!-- Task 1 -->
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">
+                                    Complete project proposal
+                                    <span class="task-priority priority-high">High</span>
+                                </div>
+                                <div class="task-date">
+                                    <i class="far fa-calendar"></i> Due: Tomorrow, 10:00 AM
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button><i class="fas fa-edit"></i></button>
+                                <button><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="task-description">
+                            Prepare the final project proposal document for client review. Include all requirements and budget estimates.
+                        </div>
+                        
+                        <div class="task-tags">
+                            <span class="tag">Work</span>
+                            <span class="tag">Urgent</span>
+                            <span class="tag">Project</span>
+                        </div>
+                        
+                        <div class="subtasks">
+                            <h4>Subtasks (2/4 completed)</h4>
+                            <div class="subtask">
+                                <input type="checkbox" checked>
+                                <span>Gather requirements</span>
+                            </div>
+                            <div class="subtask">
+                                <input type="checkbox" checked>
+                                <span>Create wireframes</span>
+                            </div>
+                            <div class="subtask">
+                                <input type="checkbox">
+                                <span>Prepare budget estimate</span>
+                            </div>
+                            <div class="subtask">
+                                <input type="checkbox">
+                                <span>Review with team</span>
+                            </div>
+                        </div>
+                        
+                        <div class="task-footer">
+                            <div class="task-members">
+                                <i class="fas fa-user-friends"></i> Shared with 3
+                            </div>
+                            <div class="task-status">
+                                <i class="fas fa-comment"></i> 5
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Task 2 -->
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">
+                                    Team meeting
+                                    <span class="task-priority priority-medium">Medium</span>
+                                </div>
+                                <div class="task-date">
+                                    <i class="far fa-calendar"></i> Today, 2:30 PM
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button><i class="fas fa-edit"></i></button>
+                                <button><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="task-description">
+                            Weekly team sync to discuss project progress and address any blockers.
+                        </div>
+                        
+                        <div class="task-tags">
+                            <span class="tag">Meeting</span>
+                            <span class="tag">Work</span>
+                        </div>
+                        
+                        <div class="task-footer">
+                            <div class="task-members">
+                                <i class="fas fa-user-friends"></i> Shared with 5
+                            </div>
+                            <div class="task-status">
+                                <i class="fas fa-comment"></i> 2
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Task 3 -->
+                    <div class="task-card completed">
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">
+                                    Buy groceries
+                                    <span class="task-priority priority-low">Low</span>
+                                </div>
+                                <div class="task-date">
+                                    <i class="far fa-calendar"></i> Completed: Yesterday
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button><i class="fas fa-redo"></i></button>
+                                <button><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="task-description">
+                            Milk, eggs, bread, fruits, vegetables, and snacks for the week.
+                        </div>
+                        
+                        <div class="task-tags">
+                            <span class="tag">Personal</span>
+                            <span class="tag">Shopping</span>
+                        </div>
+                        
+                        <div class="task-footer">
+                            <div class="task-status">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Task 4 -->
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">
+                                    Gym workout
+                                    <span class="task-priority priority-medium">Medium</span>
+                                </div>
+                                <div class="task-date">
+                                    <i class="far fa-calendar"></i> Daily, 7:00 PM
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button><i class="fas fa-edit"></i></button>
+                                <button><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="task-description">
+                            45 minutes cardio and strength training.
+                        </div>
+                        
+                        <div class="task-tags">
+                            <span class="tag">Health</span>
+                            <span class="tag">Personal</span>
+                        </div>
+                        
+                        <div class="subtasks">
+                            <h4>Today's Workout</h4>
+                            <div class="subtask">
+                                <input type="checkbox">
+                                <span>20 min treadmill</span>
+                            </div>
+                            <div class="subtask">
+                                <input type="checkbox">
+                                <span>3 sets bench press</span>
+                            </div>
+                            <div class="subtask">
+                                <input type="checkbox">
+                                <span>3 sets squats</span>
+                            </div>
+                        </div>
+                        
+                        <div class="task-footer">
+                            <div class="task-status">
+                                <i class="fas fa-history"></i> Recurring
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Eisenhower Matrix View (Hidden by default) -->
+                <div class="matrix-view" style="display: none;">
+                    <div class="matrix-quadrant urgent-important">
+                        <h3>Urgent & Important</h3>
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        Fix critical bug
+                                    </div>
+                                    <div class="task-date">
+                                        <i class="far fa-calendar"></i> Due: Today, 5:00 PM
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        Client meeting prep
+                                    </div>
+                                    <div class="task-date">
+                                        <i class="far fa-calendar"></i> Due: Tomorrow, 9:00 AM
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-quadrant not-urgent-important">
+                        <h3>Not Urgent & Important</h3>
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        Long-term planning
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        Professional development
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-quadrant urgent-not-important">
+                        <h3>Urgent & Not Important</h3>
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        Answer emails
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-quadrant not-urgent-not-important">
+                        <h3>Not Urgent & Not Important</h3>
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        Social media
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <button class="add-task-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            // Save theme preference
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        });
+        
+        // Check for saved theme preference
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        // View Toggle
+        const viewButtons = document.querySelectorAll('.view-toggle button');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                viewButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Show appropriate view
+                const taskGrid = document.querySelector('.task-grid');
+                const matrixView = document.querySelector('.matrix-view');
+                
+                if (button.querySelector('.fa-list')) {
+                    taskGrid.style.display = 'grid';
+                    matrixView.style.display = 'none';
+                } else if (button.querySelector('.fa-grip')) {
+                    // Board view (not implemented in this demo)
+                    taskGrid.style.display = 'grid';
+                    matrixView.style.display = 'none';
+                } else if (button.querySelector('.fa-th-large')) {
+                    taskGrid.style.display = 'none';
+                    matrixView.style.display = 'grid';
+                }
+            });
+        });
+        
+        // Task completion toggle
+        const checkboxes = document.querySelectorAll('.subtask input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const subtaskText = this.nextElementSibling;
+                if (this.checked) {
+                    subtaskText.style.textDecoration = 'line-through';
+                    subtaskText.style.opacity = '0.7';
+                } else {
+                    subtaskText.style.textDecoration = 'none';
+                    subtaskText.style.opacity = '1';
+                }
+            });
+        });
+        
+        // Add Task Button
+        const addTaskBtn = document.querySelector('.add-task-btn');
+        addTaskBtn.addEventListener('click', () => {
+            alert('Add new task functionality would open a modal in a full implementation');
+            // In a real app, this would open a modal with a form to create a new task
+        });
+        
+        // Task card hover effect
+        const taskCards = document.querySelectorAll('.task-card');
+        taskCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'var(--box-shadow)';
+            });
+        });
+        
+        // Priority indicators
+        const priorityIndicators = document.querySelectorAll('.task-priority');
+        priorityIndicators.forEach(indicator => {
+            if (indicator.classList.contains('priority-high')) {
+                indicator.style.backgroundColor = 'rgba(239, 71, 111, 0.2)';
+                indicator.style.color = '#ef476f';
+            } else if (indicator.classList.contains('priority-medium')) {
+                indicator.style.backgroundColor = 'rgba(255, 209, 102, 0.2)';
+                indicator.style.color = '#c9a227';
+            } else if (indicator.classList.contains('priority-low')) {
+                indicator.style.backgroundColor = 'rgba(6, 214, 160, 0.2)';
+                indicator.style.color = '#06d6a0';
+            }
+        });
+    </script>
+</body>
+</html>
